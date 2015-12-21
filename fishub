@@ -1,0 +1,37 @@
+--This program gets all of the files
+--from my github so that you are allowed
+--to download them in computercraft. Use if you like,
+--but give credit :)
+--Thanks, XMedders
+programs = http.get("https://raw.githubusercontent.com/fishermedders/cc/master/index").readAll()
+--print(programs)
+loadstring(programs)()
+--print(#list)
+while true do
+  print("Programs: ")
+  for i = 1,#list do
+    print(i..". "..list[i][1].." v"..list[i][3].." by XMedders")
+  end
+  print("Usable Commands: dl <num> [name], see <num>")
+  input = read()
+  args = {}
+  for a in input:gmatch("%S+") do table.insert(args,a) end
+  if args[1] == "dl" then
+    if args[2] ~= nil then
+      cont = http.get(list[tonumber(args[2])][4]).readAll()
+      if args[3] ~= nil then
+        filename = args[3]
+      else
+        filename = list[tonumber(args[2])][2]
+      end
+      file = fs.open(filename,"w")
+      file.write(cont)
+      file.close()
+    end
+  elseif args[1] == "see" then
+    if args[2] ~= nil then
+      cont = http.get(list[tonumber(args[2])][4]).readAll()
+      print(cont)
+    end
+  end
+end
