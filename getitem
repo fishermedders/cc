@@ -1,0 +1,30 @@
+--An OpenPeripheral Inventory sensor. This was made
+--by me, XMedders (github.com/fishermedders).
+--if you use it, please leave this or give me creds.
+--Thanks, XMedders x)
+args = {...}
+p = peripheral.wrap("right")
+if args[1] == nil then
+  --allstacks = p.getAllStacks()
+  size = p.getInventorySize()
+  --print(#allstacks)
+  for i = 1,size do
+    if p.getStackInSlot(i) ~= nil then
+      stack = p.getStackInSlot(i)
+      print("In slot "..i..": "..stack["name"].." (id: "..stack["id"]..") x"..stack["qty"])
+    end
+    --print("slot "..i..": "..allstacks[i]["name"].." x"..allstacks[i]["qty"])
+  end
+elseif args[1] ~= nil then
+  size = p.getInventorySize()
+  if tonumber(args[1]) > tonumber(size) or tonumber(args[1]) < 0 then
+    print("This is not a valid slot!")
+    return true
+  end
+  if p.getStackInSlot(tonumber(args[1])) == nil then
+    print("There is no item in this slot!")
+    return true
+  end
+  stack = p.getStackInSlot(tonumber(args[1]))
+  print("In slot "..args[1]..": "..stack["name"].." (id: "..stack["id"]..") x"..stack["qty"])
+end
