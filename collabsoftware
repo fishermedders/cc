@@ -1,0 +1,8 @@
+args = {...}
+if args[1] ~= nil then
+  shell.run("edit disk/"..args[1])
+else
+  term.setTextColor(colors.red)
+  print("Missing argument 1: File name.")
+  term.setTextColor(colors.white)
+end
