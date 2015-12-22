@@ -1,0 +1,15 @@
+--A simple monitor program written for
+--pat1213 on the craftersland tekkit server on 12/21/15
+--Use if you'd like, just gimme dat credit :D
+
+args = {...}
+fstr = ''
+for i = 1,#args do
+  fstr = fstr..args[i].." "
+end
+m = peripheral.wrap("back")
+size = {m.getSize()}
+m.clear()
+m.setCursorPos((size[1]/2)-(#fstr/2)+1,size[2]/2 +1)
+fstr = fstr:sub(1,#fstr-1)
+m.write(fstr)
