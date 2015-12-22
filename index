@@ -2,5 +2,6 @@ list = {
   {"Event Program","events","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/events"},
   {"OpenPeripheral Item Snip.","getitem","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/getitem"},
   {"Fishub Program Downloader","fishub","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/fishub"},
-  {"Monitor Sign for pat1213","mon","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/monitorsign"}
+  {"Monitor Sign for pat1213","mon","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/monitorsign"},
+  {"CollabSoftware","ef","1.0","https://raw.githubusercontent.com/fishermedders/cc/master/collabsoftware"}
 }
