@@ -12,7 +12,7 @@ while true do
   for i = 1,#list do
     print(i..". "..list[i][1].." v"..list[i][3].." by XMedders")
   end
-  print("Usable Commands: dl <num> [name], see <num>")
+  print("Usable Commands: dl <num> [name], see <num>, or exit")
   input = read()
   args = {}
   for a in input:gmatch("%S+") do table.insert(args,a) end
@@ -33,5 +33,8 @@ while true do
       cont = http.get(list[tonumber(args[2])][4]).readAll()
       print(cont)
     end
+  elseif args[1] == "exit" then
+    break
   end
 end
+print("Thanks for using XMedders' Programs!")
