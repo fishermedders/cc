@@ -429,7 +429,7 @@ end
 
 while true do
   parallel.waitForAny(fMainLoop,fChatLoop)
-  sleep(0.05)
+  --sleep(0.05)
 end
 print(fDirection(0,10,0,0))
 --print(#fGetPlayers())
