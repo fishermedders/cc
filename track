@@ -234,9 +234,14 @@ function fGetPlayers()
 end
 
 tRendered = {}
+tForceAdd = {}
 function fRenderTable()
   tRendered = {}
   local tPlayers = fGetPlayers()
+  for i = 1,#tForceAdd do
+    tNewPlayer = {["name"]=tForceAdd[i],["x"]=0,["y"]=64,["z"]=0,["world"]="fake-player"}
+    tPlayers[#tPlayers+1] = tNewPlayer
+  end
   for i = 1,#tPlayers do
     tSensorData = oSensor.getPlayerData(tPlayers[i]["name"])
     tPlayers[i]["world"] = "?"
@@ -295,33 +300,6 @@ function fRenderTable()
   --[[for _,tRender in pairs(tRendered) do
     print(tRender["render"])
   end]]--
-end
-
-function fDirectionOld(x1,y1,x2,y2)
-  nRad = math.atan2(y2-y1,x2-x1)
-  if nRad < 0 then
-    nRad = nRad + (2*math.pi)
-  end
-  nDeg = nRad * (180/math.pi)
-  if nDeg == 0 then
-    return "E"
-  elseif nDeg == 45 then
-    return "NE"
-  elseif nDeg == 90 then
-    return "N"
-  elseif nDeg == 135 then
-    return "NW"
-  elseif nDeg == 180 then
-    return "W"
-  elseif nDeg == 225 then
-    return "SW"
-  elseif nDeg == 270 then
-    return "S"
-  elseif nDeg == 315 then
-    return "SE"
-  else
-    return "?"
-  end
 end
 
 function fDirection(nX1, nZ1, nX2, nZ2)
@@ -421,6 +399,20 @@ function fChatLoop()
         if tonumber(tCmdArgs[3]) and tonumber(tCmdArgs[4]) then
           tModuleLocs[tCmdArgs[2]][1] = tonumber(tCmdArgs[3])
           tModuleLocs[tCmdArgs[2]][2] = tonumber(tCmdArgs[4])
+        end
+      end
+    end
+    if tCmdArgs[1] == "add" then
+      if tCmdArgs[2] ~= nil then
+        tForceAdd[#tForceAdd+1] = tCmdArgs[2]
+      end
+    end
+    if tCmdArgs[1] == "remove" then
+      if tCmdArgs[2] ~= nil then
+        for i = 1,#tForceAdd do
+          if tForceAdd[i] == tCmdArgs[2] then
+            table.remove(tForceAdd,i)
+          end
         end
       end
     end
