@@ -409,6 +409,7 @@ end
 
 function fChatLoop()
   while true do
+    print("looping!")
     tEvent = {os.pullEvent("chat_command")}
     print("$$" .. tEvent[1])
     tCmdArgs = {}
