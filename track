@@ -335,7 +335,7 @@ function fMainLoop()
     fRenderTable()
     tUsers = oBridge.getUsers()
     for i = 1,#tUsers do
-      if tUsers[i] == "Fisher" or tUsers[i] == "RewVenN" then
+      if tUsers[i] == "Fisher" or tUsers[i] == "RewVenN" or tUsers[i] == "ZeeDerpMaster" then
         tSurface = oBridge.getUserSurface(tUsers[i])
         tSurface.clear()
         nIterator = 1
