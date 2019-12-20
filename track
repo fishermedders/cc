@@ -391,7 +391,7 @@ function fChatLoop()
     tEvent = {os.pullEvent("chat_command")}
     print("$$" .. tEvent[2])
     tCmdArgs = {}
-    for sArg in string.gmatch(tEvent[1],"%S+") do
+    for sArg in string.gmatch(tEvent[2],"%S+") do
        table.insert(tCmdArgs, sArg)
     end
     if tCmdArgs[1] == "move" then
