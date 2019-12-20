@@ -389,7 +389,7 @@ function fChatLoop()
   while true do
     print("looping!")
     tEvent = {os.pullEvent("chat_command")}
-    print("$$" .. tEvent[1])
+    print("$$" .. tEvent[2])
     tCmdArgs = {}
     for sArg in string.gmatch(tEvent[1],"%S+") do
        table.insert(tCmdArgs, sArg)
