@@ -1,0 +1,449 @@
+--Json Library by ElvishJerrico
+
+------------------------------------------------------------------ utils
+local controls = {["\n"]="\\n", ["\r"]="\\r", ["\t"]="\\t", ["\b"]="\\b", ["\f"]="\\f", ["\""]="\\\"", ["\\"]="\\\\"}
+
+local function isArray(t)
+	local max = 0
+	for k,v in pairs(t) do
+		if type(k) ~= "number" then
+			return false
+		elseif k > max then
+			max = k
+		end
+	end
+	return max == #t
+end
+
+local whites = {['\n']=true; ['\r']=true; ['\t']=true; [' ']=true; [',']=true; [':']=true}
+function removeWhite(str)
+	while whites[str:sub(1, 1)] do
+		str = str:sub(2)
+	end
+	return str
+end
+
+------------------------------------------------------------------ encoding
+
+local function encodeCommon(val, pretty, tabLevel, tTracking)
+	local str = ""
+
+	-- Tabbing util
+	local function tab(s)
+		str = str .. ("\t"):rep(tabLevel) .. s
+	end
+
+	local function arrEncoding(val, bracket, closeBracket, iterator, loopFunc)
+		str = str .. bracket
+		if pretty then
+			str = str .. "\n"
+			tabLevel = tabLevel + 1
+		end
+		for k,v in iterator(val) do
+			tab("")
+			loopFunc(k,v)
+			str = str .. ","
+			if pretty then str = str .. "\n" end
+		end
+		if pretty then
+			tabLevel = tabLevel - 1
+		end
+		if str:sub(-2) == ",\n" then
+			str = str:sub(1, -3) .. "\n"
+		elseif str:sub(-1) == "," then
+			str = str:sub(1, -2)
+		end
+		tab(closeBracket)
+	end
+
+	-- Table encoding
+	if type(val) == "table" then
+		assert(not tTracking[val], "Cannot encode a table holding itself recursively")
+		tTracking[val] = true
+		if isArray(val) then
+			arrEncoding(val, "[", "]", ipairs, function(k,v)
+				str = str .. encodeCommon(v, pretty, tabLevel, tTracking)
+			end)
+		else
+			arrEncoding(val, "{", "}", pairs, function(k,v)
+				assert(type(k) == "string", "JSON object keys must be strings", 2)
+				str = str .. encodeCommon(k, pretty, tabLevel, tTracking)
+				str = str .. (pretty and ": " or ":") .. encodeCommon(v, pretty, tabLevel, tTracking)
+			end)
+		end
+	-- String encoding
+	elseif type(val) == "string" then
+		str = '"' .. val:gsub("[%c\"\\]", controls) .. '"'
+	-- Number encoding
+	elseif type(val) == "number" or type(val) == "boolean" then
+		str = tostring(val)
+	else
+		error("JSON only supports arrays, objects, numbers, booleans, and strings", 2)
+	end
+	return str
+end
+
+function encode(val)
+	return encodeCommon(val, false, 0, {})
+end
+
+function encodePretty(val)
+	return encodeCommon(val, true, 0, {})
+end
+
+------------------------------------------------------------------ decoding
+
+local decodeControls = {}
+for k,v in pairs(controls) do
+	decodeControls[v] = k
+end
+
+function parseBoolean(str)
+	if str:sub(1, 4) == "true" then
+		return true, removeWhite(str:sub(5))
+	else
+		return false, removeWhite(str:sub(6))
+	end
+end
+
+function parseNull(str)
+	return nil, removeWhite(str:sub(5))
+end
+
+local numChars = {['e']=true; ['E']=true; ['+']=true; ['-']=true; ['.']=true}
+function parseNumber(str)
+	local i = 1
+	while numChars[str:sub(i, i)] or tonumber(str:sub(i, i)) do
+		i = i + 1
+	end
+	local val = tonumber(str:sub(1, i - 1))
+	str = removeWhite(str:sub(i))
+	return val, str
+end
+
+function parseString(str)
+	str = str:sub(2)
+	local s = ""
+	while str:sub(1,1) ~= "\"" do
+		local next = str:sub(1,1)
+		str = str:sub(2)
+		assert(next ~= "\n", "Unclosed string")
+
+		if next == "\\" then
+			local escape = str:sub(1,1)
+			str = str:sub(2)
+
+			next = assert(decodeControls[next..escape], "Invalid escape character")
+		end
+
+		s = s .. next
+	end
+	return s, removeWhite(str:sub(2))
+end
+
+function parseArray(str)
+	str = removeWhite(str:sub(2))
+
+	local val = {}
+	local i = 1
+	while str:sub(1, 1) ~= "]" do
+		local v = nil
+		v, str = parseValue(str)
+		val[i] = v
+		i = i + 1
+		str = removeWhite(str)
+	end
+	str = removeWhite(str:sub(2))
+	return val, str
+end
+
+function parseObject(str)
+	str = removeWhite(str:sub(2))
+
+	local val = {}
+	while str:sub(1, 1) ~= "}" do
+		local k, v = nil, nil
+		k, v, str = parseMember(str)
+		val[k] = v
+		str = removeWhite(str)
+	end
+	str = removeWhite(str:sub(2))
+	return val, str
+end
+
+function parseMember(str)
+	local k = nil
+	k, str = parseValue(str)
+	local val = nil
+	val, str = parseValue(str)
+	return k, val, str
+end
+
+function parseValue(str)
+	local fchar = str:sub(1, 1)
+	if fchar == "{" then
+		return parseObject(str)
+	elseif fchar == "[" then
+		return parseArray(str)
+	elseif tonumber(fchar) ~= nil or numChars[fchar] then
+		return parseNumber(str)
+	elseif str:sub(1, 4) == "true" or str:sub(1, 5) == "false" then
+		return parseBoolean(str)
+	elseif fchar == "\"" then
+		return parseString(str)
+	elseif str:sub(1, 4) == "null" then
+		return parseNull(str)
+	end
+	return nil
+end
+
+function decode(str)
+	str = removeWhite(str)
+	t = parseValue(str)
+	return t
+end
+
+function decodeFromFile(path)
+	local file = assert(fs.open(path, "r"))
+	local decoded = decode(file.readAll())
+	file.close()
+	return decoded
+end
+
+--Finding a Peripheral
+function findPeripheral(pType)
+  local pList = {}
+  for _,pName in pairs(peripheral.getNames()) do
+    if peripheral.getType(pName) == pType then
+      table.insert(pList, peripheral.wrap(pName))
+    end
+  end
+  return unpack(pList)
+end
+peripheral.find = findPeripheral
+
+--Start of program
+oBridge = peripheral.find("openperipheral_glassesbridge")
+oSensor = peripheral.find("openperipheral_sensor")
+
+function fGetPlayers()
+  local sData = http.get("http://tekkit.craftersland.net:25800/up/world/world/").readAll()
+  sData = string.gsub(sData, "\\", "\\\\")
+  local tData = decode(sData)
+  return tData["players"]
+end
+
+tRendered = {}
+function fRenderTable()
+  tRendered = {}
+  local tPlayers = fGetPlayers()
+  for i = 1,#tPlayers do
+    tSensorData = oSensor.getPlayerData(tPlayers[i]["name"])
+    tPlayers[i]["world"] = "?"
+    if tSensorData then
+      tPlayers[i].x = math.floor(4005+tSensorData.position.x)
+      tPlayers[i].y = math.floor(67+tSensorData.position.y)
+      tPlayers[i].z = math.floor(3771+tSensorData.position.z)
+      tPlayers[i].world = "world"
+    end
+    sRender = ""
+    sName = tPlayers[i]["name"]
+    for si = #tPlayers[i]["name"],17 do
+      sName = sName .. " "
+    end
+    sRender = sRender .. sName
+    sX = tostring(tPlayers[i]["x"])
+    if not string.find(sX, "-") then
+      sX = " " .. sX
+    end
+    for si = #sX,6 do
+      sX = sX .. " "
+    end
+    sRender = sRender .. sX
+    sY = tostring(tPlayers[i]["y"])
+    if not string.find(sY, "-") then
+      sY = " " .. sY
+    end
+    for si = #sY,4 do
+      sY = sY .. " "
+    end
+    sRender = sRender .. sY
+    sZ = tostring(tPlayers[i]["z"])
+    if not string.find(sZ, "-") then
+      sZ = " " .. sZ
+    end
+    for si = #sZ,6 do
+      sZ = sZ .. " "
+    end
+    sRender = sRender .. sZ
+    sWorld = tPlayers[i]["world"]
+    for si = #tPlayers[i]["world"],6 do
+      sWorld = sWorld .. " "
+    end
+    sRender = sRender .. sWorld
+    tRendered[tPlayers[i]["name"]] = {}
+    tRendered[tPlayers[i]["name"]]["render"] = sRender
+    tRendered[tPlayers[i]["name"]]["name"] = tPlayers[i].name
+    tRendered[tPlayers[i]["name"]]["sx"] = sX
+    tRendered[tPlayers[i]["name"]]["sy"] = sY
+    tRendered[tPlayers[i]["name"]]["sz"] = sZ
+    tRendered[tPlayers[i]["name"]]["x"] = tPlayers[i].x
+    tRendered[tPlayers[i]["name"]]["y"] = tPlayers[i].y
+    tRendered[tPlayers[i]["name"]]["z"] = tPlayers[i].z
+    tRendered[tPlayers[i]["name"]]["world"] = tPlayers[i].world
+  end
+  --[[for _,tRender in pairs(tRendered) do
+    print(tRender["render"])
+  end]]--
+end
+
+function fDirectionOld(x1,y1,x2,y2)
+  nRad = math.atan2(y2-y1,x2-x1)
+  if nRad < 0 then
+    nRad = nRad + (2*math.pi)
+  end
+  nDeg = nRad * (180/math.pi)
+  if nDeg == 0 then
+    return "E"
+  elseif nDeg == 45 then
+    return "NE"
+  elseif nDeg == 90 then
+    return "N"
+  elseif nDeg == 135 then
+    return "NW"
+  elseif nDeg == 180 then
+    return "W"
+  elseif nDeg == 225 then
+    return "SW"
+  elseif nDeg == 270 then
+    return "S"
+  elseif nDeg == 315 then
+    return "SE"
+  else
+    return "?"
+  end
+end
+
+function fDirection(nX1, nZ1, nX2, nZ2)
+  local dir = math.atan2(nZ2 - nZ1, nX2 - nX1)
+  if dir > 2.75 or dir < -2.74 then
+    return "W"
+  elseif dir > -2.75 and dir < -1.95 then
+    return "NW"
+  elseif dir > -1.96 and dir < -1.17 then
+    return "N"
+  elseif dir > -1.18 and dir < -0.38 then
+    return "NE"
+  elseif dir > -0.39 and dir < 0.40 then
+    return "E"
+  elseif dir > 0.39 and dir < 1.19 then
+    return "SE"
+  elseif dir > 1.18 and dir < 1.96 then
+    return "S"
+  elseif dir > 1.96 and dir < 2.76 then
+    return "SW"
+  end
+end
+
+function fDistance(nX1, nY1, nX2, nY2)
+  return math.floor(math.sqrt(math.pow(nX2-nX1,2)+math.pow(nY2-nY1,2)))
+end
+
+tModuleLocs = {
+  ["tracker"] = {7,7},
+}
+function fMainLoop()
+  while true do
+    fRenderTable()
+    tUsers = oBridge.getUsers()
+    for i = 1,#tUsers do
+      if tUsers[i] == "Fisher" or tUsers[i] == "RewVenN" then
+        tSurface = oBridge.getUserSurface(tUsers[i])
+        tSurface.clear()
+        nIterator = 1
+        for _,tRender in pairs(tRendered) do
+          nIterator = nIterator + 1
+        end
+        nGradientWidth = 265
+        if tRendered[tUsers[i]] ~= nil then
+          nGradientWidth = 330
+        end
+        tSurface.addGradientBox(tModuleLocs["tracker"][1],tModuleLocs["tracker"][2],tModuleLocs["tracker"][1]+nGradientWidth,tModuleLocs["tracker"][2]+(nIterator*10)-10,0x000000,0.7,0x404040,0.7,1)
+        nIterator = 1
+        for _,tRender in pairs(tRendered) do
+          nColor = 0xFFFFFF
+          if nIterator % 2 == 0 then
+            nColor = 0xFFFFFF
+          else
+            nColor = 0xC0C0C0
+          end
+          tSurface.addText(tModuleLocs["tracker"][1]+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,tRender["name"],nColor)
+          tSurface.addText(tModuleLocs["tracker"][1]+110+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,tostring(tRender["sx"]),nColor)
+          tSurface.addText(tModuleLocs["tracker"][1]+150+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,tostring(tRender["sy"]),nColor)
+          tSurface.addText(tModuleLocs["tracker"][1]+190+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,tostring(tRender["sz"]),nColor)
+          tSurface.addText(tModuleLocs["tracker"][1]+230+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,tRender["world"],nColor)
+          if tRendered[tUsers[i]] ~= nil then
+            if tRender["name"] == tUsers[i] then
+              tSurface.addText(tModuleLocs["tracker"][1]+270+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,"-",nColor)
+            else
+              tSurface.addText(tModuleLocs["tracker"][1]+270+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,fDirection(tonumber(tRendered[tUsers[i]]["x"]),tonumber(tRendered[tUsers[i]]["z"]),tonumber(tRender["x"]),tonumber(tRender["z"])),nColor)
+            end
+            if tRender["name"] == tUsers[i] then
+              tSurface.addText(tModuleLocs["tracker"][1]+290+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,"-",nColor)
+            else
+              if tRender["world"] ~= "?" then
+                tSurface.addText(tModuleLocs["tracker"][1]+290+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,fDistance(tonumber(tRendered[tUsers[i]]["x"]),tonumber(tRendered[tUsers[i]]["z"]),tonumber(tRender["x"]),tonumber(tRender["z"])).."m",nColor)
+              else
+                tSurface.addText(tModuleLocs["tracker"][1]+290+4,tModuleLocs["tracker"][2]+(nIterator*10)-6,"?m",nColor)
+              end
+            end
+          end
+          nIterator = nIterator + 1
+        end
+      end
+    end
+    os.startTimer(0.25)
+    tEvent = {os.pullEvent()}
+    if tEvent[1] == "chat_command" then
+      print("$$" .. tEvent[2])
+      tCmdArgs = {}
+      for sArg in string.gmatch(tEvent[2],"%S+") do
+         table.insert(tCmdArgs, sArg)
+      end
+      if tCmdArgs[1] == "move" then
+        if tModuleLocs[tCmdArgs[2]] ~= nil then
+          if tonumber(tCmdArgs[3]) and tonumber(tCmdArgs[4]) then
+            tModuleLocs[tCmdArgs[2]][1] = tonumber(tCmdArgs[3])
+            tModuleLocs[tCmdArgs[2]][2] = tonumber(tCmdArgs[4])
+          end
+        end
+      end
+    end
+  end
+end
+
+function fChatLoop()
+  while true do
+    tEvent = {os.pullEvent("chat_command")}
+    print("$$" .. tEvent[1])
+    tCmdArgs = {}
+    for sArg in string.gmatch(tEvent[1],"%S+") do
+       table.insert(tCmdArgs, sArg)
+    end
+    if tCmdArgs[1] == "move" then
+      if tModuleLocs[tCmdArgs[2]] ~= nil then
+        if tonumber(tCmdArgs[3]) and tonumber(tCmdArgs[4]) then
+          tModuleLocs[tCmdArgs[2]][1] = tonumber(tCmdArgs[3])
+          tModuleLocs[tCmdArgs[2]][2] = tonumber(tCmdArgs[4])
+        end
+      end
+    end
+  end
+end
+
+while true do
+  parallel.waitForAny(fMainLoop(),fChatLoop())
+  sleep(0.05)
+end
+print(fDirection(0,10,0,0))
+--print(#fGetPlayers())
