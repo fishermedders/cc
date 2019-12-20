@@ -346,8 +346,8 @@ function fMainLoop()
         -----------------------
         
         sWelcome = "Welcome back, " .. tUsers[i] .. "!"
-        tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],tSurface.getStringWidth(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
-        tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,tSurface.getStringWidth(sWelcome), 10, "mobessence")
+        tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],oBridge.getStringWidth(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
+        tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,oBridge.getStringWidth(sWelcome), 10, "mobessence")
         tSurface.addText(tModuleLocs["welcome"][1]+2,tModuleLocs["welcome"][2]+2,sWelcome, 0xFFFFFF)
         
         -----------------------
