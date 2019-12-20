@@ -246,9 +246,9 @@ function fRenderTable()
     tSensorData = oSensor.getPlayerData(tPlayers[i]["name"])
     tPlayers[i]["world"] = "?"
     if tSensorData then
-      tPlayers[i].x = math.floor(4005+tSensorData.position.x)
-      tPlayers[i].y = math.floor(67+tSensorData.position.y)
-      tPlayers[i].z = math.floor(3771+tSensorData.position.z)
+      tPlayers[i].x = math.floor(4073+tSensorData.position.x)
+      tPlayers[i].y = math.floor(39+tSensorData.position.y)
+      tPlayers[i].z = math.floor(3776+tSensorData.position.z)
       tPlayers[i].world = "world"
     end
     sRender = ""
