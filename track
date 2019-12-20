@@ -404,21 +404,6 @@ function fMainLoop()
     end
     os.startTimer(0.25)
     tEvent = {os.pullEvent()}
-    if tEvent[1] == "chat_command" then
-      print("$$" .. tEvent[2])
-      tCmdArgs = {}
-      for sArg in string.gmatch(tEvent[2],"%S+") do
-         table.insert(tCmdArgs, sArg)
-      end
-      if tCmdArgs[1] == "move" then
-        if tModuleLocs[tCmdArgs[2]] ~= nil then
-          if tonumber(tCmdArgs[3]) and tonumber(tCmdArgs[4]) then
-            tModuleLocs[tCmdArgs[2]][1] = tonumber(tCmdArgs[3])
-            tModuleLocs[tCmdArgs[2]][2] = tonumber(tCmdArgs[4])
-          end
-        end
-      end
-    end
   end
 end
 
