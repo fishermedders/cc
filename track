@@ -241,9 +241,9 @@ function fRenderTable()
   if tSettings["mode"] == 1 then
     for i = 1,#tPlayers do
       if tPlayers[i] ~= nil then
-        print(i .. " " .. tPlayers[i]["name"] .. " " .. #tPlayers .. " " .. #tSettings["staff_blacklist"])
+        --print(i .. " " .. tPlayers[i]["name"] .. " " .. #tPlayers .. " " .. #tSettings["staff_blacklist"])
         for iv = 1,#tSettings["staff_blacklist"] do
-        print(iv .. " " .. tSettings["staff_blacklist"][iv])
+        --print(iv .. " " .. tSettings["staff_blacklist"][iv])
           if tPlayers[i]["name"] == tSettings["staff_blacklist"][iv] then
             table.remove(tPlayers,i)
           end
@@ -401,6 +401,10 @@ function fAllowed(sUser)
   return false
 end
 
+function fAddChatMessage(sMessage,nColor,nTicks,sPlayer)
+  table.insert(tMessages,{["message"]=sMessage,["color"]=nColor,["player"]=sPlayer,["ticks"]=nTicks,["currentticks"]=nTicks})
+end
+
 --Program start
 
 tSettings = {}
@@ -422,6 +426,13 @@ tModuleLocs = {
   ["tracker"] = {7,20},
   ["welcome"] = {7,7}
 }
+
+tResolution = {}
+tResolution["windowed"] = {959,507}
+tResolution["full"] = {959,539}
+
+tMessages = {}
+
 function fMainLoop()
   while true do
     fRenderTable()
@@ -444,6 +455,17 @@ function fMainLoop()
         tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],fGetTextSize(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
         tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,fGetTextSize(sWelcome), 10, "mobessence")
         tSurface.addText(tModuleLocs["welcome"][1]+2,tModuleLocs["welcome"][2]+2,sWelcome, 0xFFFFFF)
+        
+        --------------------
+        --****************--
+        --* Chat Section *--
+        --****************--
+        --------------------
+        for im = 1,#tMessages do
+          if tMessages[im]["player"] == tUsers[i] or tMessages[im]["player"] == "message_all" then
+            tSurface.addText((tResolution["windowed"][1]/2)-50+2,tResolution["windowed"][2]-80-(10*im),tMessages[im]["message"],tMessages[im]["color"])
+          end
+        end
         
         -----------------------
         --*******************--
@@ -540,11 +562,31 @@ function fChatLoop()
       tSettings["mode"] = tonumber(tCmdArgs[2])
       fSaveSettings()
     end
+    if tCmdArgs[1] == "testchat" then
+      fAddChatMessage(tCmdArgs[2],0xFF0000,100,tEvent[3])
+    end
+  end
+end
+
+function fChatTimer()
+  while true do
+    sleep(0.05)
+    nIndexesToBeRemoved = {}
+    for i = 1,#tMessages do
+      if tMessages[i]["currentticks"] == 0 then
+        nIndexesToBeRemoved[#nIndexesToBeRemoved+1] = i
+      else
+        tMessages[i]["currentticks"] = tMessages[i]["currentticks"]-1
+      end
+    end
+    for i = 1,#nIndexesToBeRemoved do
+      table.remove(tMessages,nIndexesToBeRemoved[i])
+    end
   end
 end
 
 while true do
-  parallel.waitForAny(fMainLoop,fChatLoop)
+  parallel.waitForAny(fMainLoop,fChatLoop,fChatTimer)
   --sleep(0.05)
 end
 print(fDirection(0,10,0,0))
