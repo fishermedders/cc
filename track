@@ -569,6 +569,42 @@ function fChatLoop()
     if tCmdArgs[1] == "testchat" then
       fAddChatMessage(tCmdArgs[2],0xFF0000,100,tEvent[3])
     end
+    if tCmdArgs[1] == "register" then
+      if tCmdArgs[2] == nil then
+        fAddChatMessage("Incorrect Usage: $$register <user>",0xFF0000,100,tEvent[3])
+      else
+        if fAllowed(tEvent[3]) then
+          tSettings["priv_users"][#tSettings["priv_users"]+1] = tCmdArgs[2]
+          fSaveSettings()
+          fAddChatMessage("Successfully registered [" .. tCmdArgs[2] .. "]!",0x00FF00,100,tEvent[3])
+        else
+          fAddChatMessage("You do not have permission!",0xFF0000,100,tEvent[3])
+        end
+      end
+    end
+    if tCmdArgs[1] == "unregister" then
+      if tCmdArgs[2] == nil then
+        fAddChatMessage("Incorrect Usage: $$unregister <user>",0xFF0000,100,tEvent[3])
+      else
+        if fAllowed(tEvent[3]) then
+          nWhere = -1
+          for nUser = 1,#tSettings["priv_users"] do
+            if tSettings["priv_users"][nUser] == tCmdArgs[2] then
+              nWhere = nUser
+            end
+          end
+          if nWhere ~= -1
+            table.remove(tSettings["priv_users"],nWhere)
+            fSaveSettings()
+            fAddChatMessage("Successfully unregistered [" .. tCmdArgs[2] .. "]!",0x00FF00,100,tEvent[3])
+          else
+            fAddChatMessage("The player [" .. tCmdArgs[2] .. "] was not found in the registered users list!",0xFF0000,100,tEvent[3])
+          end
+        else
+          fAddChatMessage("You do not have permission!",0xFF0000,100,tEvent[3])
+        end
+      end
+    end
   end
 end
 
