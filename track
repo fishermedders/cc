@@ -366,8 +366,7 @@ function fGetTextSize(sText)
     ["."] = 1,
     ["<"] = 4,
     [">"] = 4,
-    [" "] = 0,
-    ["1"] = 4
+    [" "] = 2,
   }
   nSize = 0
   for i = 1,#sText do
@@ -391,6 +390,15 @@ function fSaveSettings()
   oSettingsFile = fs.open("tracker_settings","w")
   oSettingsFile.write(textutils.serialize(tSettings))
   oSettingsFile.close()
+end
+
+function fAllowed(sUser)
+  for i = 1,#tSettings["priv_users"] do
+    if tSettings["priv_users"][i] == sUser then
+      return true
+    end
+  end
+  return false
 end
 
 --Program start
@@ -419,7 +427,7 @@ function fMainLoop()
     fRenderTable()
     tUsers = oBridge.getUsers()
     for i = 1,#tUsers do
-      if tUsers[i] == "Fisher" or tUsers[i] == "RewVenN" or tUsers[i] == "ZeeDerpMaster" then
+      if fAllowed(tUsers[i]) then
         tSurface = oBridge.getUserSurface(tUsers[i])
         tSurface.clear()
         -----------------------
@@ -431,8 +439,8 @@ function fMainLoop()
         for _,tRender in pairs(tRendered) do
           nIterator = nIterator + 1
         end
-        --sWelcome = "Welcome back, " .. tUsers[i] .. "! " .. nIterator .. " players online!"
-        sWelcome = tostring(nIterator)
+        sWelcome = "Welcome back, " .. tUsers[i] .. "! " .. tostring(nIterator) .. " players online!"
+        --sWelcome = tostring(nIterator)
         tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],fGetTextSize(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
         tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,fGetTextSize(sWelcome), 10, "mobessence")
         tSurface.addText(tModuleLocs["welcome"][1]+2,tModuleLocs["welcome"][2]+2,sWelcome, 0xFFFFFF)
