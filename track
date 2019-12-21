@@ -593,7 +593,7 @@ function fChatLoop()
               nWhere = nUser
             end
           end
-          if nWhere ~= -1
+          if nWhere ~= -1 then
             table.remove(tSettings["priv_users"],nWhere)
             fSaveSettings()
             fAddChatMessage("Successfully unregistered [" .. tCmdArgs[2] .. "]!",0x00FF00,100,tEvent[3])
