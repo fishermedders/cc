@@ -458,7 +458,7 @@ function fMainLoop()
         if tRendered[tUsers[i]] ~= nil then
           nGradientWidth = 330
         end
-        tSurface.addGradientBox(tModuleLocs["tracker"][1],tModuleLocs["tracker"][2],nGradientWidth,(nIterator*10)-3,0x000000,0.7,0x404040,0.7,1)
+        tSurface.addGradientBox(tModuleLocs["tracker"][1],tModuleLocs["tracker"][2],nGradientWidth,(nIterator*10)-5,0x000000,0.7,0x404040,0.7,1)
         nIterator = 1
         for _,tRender in pairs(tRendered) do
           nColor = 0xFFFFFF
