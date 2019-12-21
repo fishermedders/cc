@@ -461,6 +461,15 @@ function fMainLoop()
         --* Chat Section *--
         --****************--
         --------------------
+        nLongestMessage = -1
+        for im = 1,#tMessages do
+          if tMessages[im]["player"] == tUsers[i] or tMessages[im]["player"] == "message_all" then
+            if fGetTextSize(tMessages[im]["message"]) > nLongestMessage then
+              nLongestMessage = fGetTextSize(tMessages[im]["message"])
+            end
+          end
+        end
+        tSurface.addGradientBox((tResolution["windowed"][1]/2)-100,tResolution["windowed"][2]-60-(10*#tMessages),nLongestMessage+2,#tMessages*10,0x000000,0.7,0x404040,0.7,1)
         for im = 1,#tMessages do
           if tMessages[im]["player"] == tUsers[i] or tMessages[im]["player"] == "message_all" then
             tSurface.addText((tResolution["windowed"][1]/2)-100+2,tResolution["windowed"][2]-60-(10*im),tMessages[im]["message"],tMessages[im]["color"])
