@@ -463,7 +463,7 @@ function fMainLoop()
         --------------------
         for im = 1,#tMessages do
           if tMessages[im]["player"] == tUsers[i] or tMessages[im]["player"] == "message_all" then
-            tSurface.addText((tResolution["windowed"][1]/2)-50+2,tResolution["windowed"][2]-80-(10*im),tMessages[im]["message"],tMessages[im]["color"])
+            tSurface.addText((tResolution["windowed"][1]/2)-100+2,tResolution["windowed"][2]-60-(10*im),tMessages[im]["message"],tMessages[im]["color"])
           end
         end
         
@@ -533,12 +533,14 @@ function fChatLoop()
         if tonumber(tCmdArgs[3]) and tonumber(tCmdArgs[4]) then
           tModuleLocs[tCmdArgs[2]][1] = tonumber(tCmdArgs[3])
           tModuleLocs[tCmdArgs[2]][2] = tonumber(tCmdArgs[4])
+          fAddChatMessage("Successfully moved module " .. tCmdArgs[2] .. " to (" .. tCmdArgs[3] .. ", " .. tCmdArgs[4] .. ")!",0x00FF00,100,tEvent[3])
         end
       end
     end
     if tCmdArgs[1] == "add" then
       if tCmdArgs[2] ~= nil then
         tForceAdd[#tForceAdd+1] = tCmdArgs[2]
+        fAddChatMessage("Successfully added " .. tCmdArgs[2] .. " to the force load list!",0x00FF00,100,tEvent[3])
       end
     end
     if tCmdArgs[1] == "remove" then
@@ -546,6 +548,7 @@ function fChatLoop()
         for i = 1,#tForceAdd do
           if tForceAdd[i] == tCmdArgs[2] then
             table.remove(tForceAdd,i)
+            fAddChatMessage("Successfully removed " .. tCmdArgs[2] .. " from the force load list!",0x00FF00,100,tEvent[3])
           end
         end
       end
@@ -560,6 +563,7 @@ function fChatLoop()
     end
     if tCmdArgs[1] == "mode" then
       tSettings["mode"] = tonumber(tCmdArgs[2])
+      fAddChatMessage("Successfully set the mode to [" .. tCmdArgs[2] .. "]!",0x00FF00,100,tEvent[3])
       fSaveSettings()
     end
     if tCmdArgs[1] == "testchat" then
