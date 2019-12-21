@@ -575,8 +575,14 @@ function fChatLoop()
       fAddChatMessage("Successfully set the mode to [" .. tCmdArgs[2] .. "]!",0x00FF00,100,tEvent[3])
       fSaveSettings()
     end
-    if tCmdArgs[1] == "testchat" then
-      fAddChatMessage(tCmdArgs[2],0xFF0000,100,tEvent[3])
+    if tCmdArgs[1] == "say" then
+      if #tCmdArgs > 1 then
+        sSay = ""
+        for mi = 2,#tCmdArgs do
+          sSay = sSay .. tCmdArgs[mi]
+        end
+        fAddChatMessage(tEvent[3] .. " " .. sSay,0xFFFFFF,100,"message_all")
+      end
     end
     if tCmdArgs[1] == "register" then
       if tCmdArgs[2] == nil then
