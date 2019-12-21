@@ -521,6 +521,9 @@ function fMainLoop()
           end
           nIterator = nIterator + 1
         end
+      else
+        tSurface = oBridge.getUserSurface(tUsers[i])
+        tSurface.clear()
       end
     end
     os.startTimer(0.25)
