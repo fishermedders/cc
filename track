@@ -238,6 +238,19 @@ tForceAdd = {}
 function fRenderTable()
   tRendered = {}
   local tPlayers = fGetPlayers()
+  if tSettings["mode"] == 1 then
+    for i = 1,#tPlayers do
+      if tPlayers[i] ~= nil then
+        print(i .. " " .. tPlayers[i]["name"] .. " " .. #tPlayers .. " " .. #tSettings["staff_blacklist"])
+        for iv = 1,#tSettings["staff_blacklist"] do
+        print(iv .. " " .. tSettings["staff_blacklist"][iv])
+          if tPlayers[i]["name"] == tSettings["staff_blacklist"][iv] then
+            table.remove(tPlayers,i)
+          end
+        end
+      end
+    end
+  end
   for i = 1,#tForceAdd do
     tNewPlayer = {["name"]=tForceAdd[i],["x"]=0,["y"]=64,["z"]=0,["world"]="fake-player"}
     tPlayers[#tPlayers+1] = tNewPlayer
@@ -327,8 +340,78 @@ function fDistance(nX1, nY1, nX2, nY2)
   return math.floor(math.sqrt(math.pow(nX2-nX1,2)+math.pow(nY2-nY1,2)))
 end
 
+function fGetTextSize(sText)
+  local tSizing = {
+    ["f"] = 4,
+    ["i"] = 1,
+    ["k"] = 4,
+    ["l"] = 2,
+    ["t"] = 3,
+    ["I"] = 3,
+    ["!"] = 1,
+    ["@"] = 6,
+    ["*"] = 4,
+    ["("] = 4,
+    [")"] = 4,
+    ["~"] = 6,
+    ["["] = 3,
+    ["]"] = 3,
+    ["{"] = 4,
+    ["}"] = 4,
+    ["|"] = 1,
+    [";"] = 1,
+    ["'"] = 2,
+    [":"] = 1,
+    [","] = 1,
+    ["."] = 1,
+    ["<"] = 4,
+    [">"] = 4,
+    [" "] = 0,
+    ["1"] = 4
+  }
+  nSize = 0
+  for i = 1,#sText do
+    if tSizing[sText.sub(i,i)] ~= nil then
+      nSize = nSize + tSizing[sText.sub(i,i)]
+    else
+      nSize = nSize + 5
+    end
+  end
+  return nSize
+end
+
+function fRefreshSettings()
+  oSettingsFile = fs.open("tracker_settings","r")
+  sSettings = oSettingsFile.readAll()
+  oSettingsFile.close()
+  tSettings = textutils.unserialize(sSettings)
+end
+
+function fSaveSettings()
+  oSettingsFile = fs.open("tracker_settings","w")
+  oSettingsFile.write(textutils.serialize(tSettings))
+  oSettingsFile.close()
+end
+
+--Program start
+
+tSettings = {}
+
+if not fs.exists("tracker_settings") then 
+  oSettings = fs.open("tracker_settings","w")
+  tSettings = {
+    ["priv_users"]={"Fisher","XMedders","ZeeDerpMaster","RewVenN"},
+    ["staff_blacklist"]={"Henkekalmar","mikewerf_","DragonSlayer","urss333","zombsta123","Brunyman","EPICfighters","Exief","Ness27","Reverser"},
+    ["mode"]=1
+  }
+  oSettings.write(textutils.serialize(tSettings))
+  oSettings.close()
+end
+
+fRefreshSettings()
+
 tModuleLocs = {
-  ["tracker"] = {7,47},
+  ["tracker"] = {7,20},
   ["welcome"] = {7,7}
 }
 function fMainLoop()
@@ -344,10 +427,14 @@ function fMainLoop()
         --* Welcome Section *--
         --*******************--
         -----------------------
-        
-        sWelcome = "Welcome back, " .. tUsers[i] .. "!"
-        tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],oBridge.getStringWidth(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
-        tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,oBridge.getStringWidth(sWelcome), 10, "mobessence")
+        nIterator = 0
+        for _,tRender in pairs(tRendered) do
+          nIterator = nIterator + 1
+        end
+        --sWelcome = "Welcome back, " .. tUsers[i] .. "! " .. nIterator .. " players online!"
+        sWelcome = tostring(nIterator)
+        tSurface.addGradientBox(tModuleLocs["welcome"][1],tModuleLocs["welcome"][2],fGetTextSize(sWelcome)+2,12,0x000000,0.7,0xFFFFFF,0.7,1)
+        tSurface.addLiquid(tModuleLocs["welcome"][1]+1,tModuleLocs["welcome"][2]+1,fGetTextSize(sWelcome), 10, "mobessence")
         tSurface.addText(tModuleLocs["welcome"][1]+2,tModuleLocs["welcome"][2]+2,sWelcome, 0xFFFFFF)
         
         -----------------------
@@ -363,7 +450,7 @@ function fMainLoop()
         if tRendered[tUsers[i]] ~= nil then
           nGradientWidth = 330
         end
-        tSurface.addGradientBox(tModuleLocs["tracker"][1],tModuleLocs["tracker"][2],tModuleLocs["tracker"][1]+nGradientWidth,tModuleLocs["tracker"][2]+(nIterator*10)-10,0x000000,0.7,0x404040,0.7,1)
+        tSurface.addGradientBox(tModuleLocs["tracker"][1],tModuleLocs["tracker"][2],nGradientWidth,(nIterator*10)-10,0x000000,0.7,0x404040,0.7,1)
         nIterator = 1
         for _,tRender in pairs(tRendered) do
           nColor = 0xFFFFFF
@@ -432,6 +519,18 @@ function fChatLoop()
           end
         end
       end
+    end
+    if tCmdArgs[1] == "kill" then
+      tUsers = oBridge.getUsers()
+      for i = 1,#tUsers do
+        tSurface = oBridge.getUserSurface(tUsers[i])
+        tSurface.clear()
+      end
+      error("Killed by " .. tEvent[3] .. "!")
+    end
+    if tCmdArgs[1] == "mode" then
+      tSettings["mode"] = tonumber(tCmdArgs[2])
+      fSaveSettings()
     end
   end
 end
