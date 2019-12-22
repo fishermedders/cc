@@ -226,6 +226,8 @@ peripheral.find = findPeripheral
 oBridge = peripheral.find("openperipheral_glassesbridge")
 oSensor = peripheral.find("openperipheral_sensor")
 
+tPlayers = {}
+
 function fGetPlayers()
   local sData = http.get("http://tekkit.craftersland.net:25800/up/world/world/").readAll()
   sData = string.gsub(sData, "\\", "\\\\")
@@ -233,11 +235,11 @@ function fGetPlayers()
   return tData["players"]
 end
 
+tPlayers = fGetPlayers()
 tRendered = {}
 tForceAdd = {}
 function fRenderTable()
   tRendered = {}
-  local tPlayers = fGetPlayers()
   if tSettings["mode"] == 1 then
     for i = 1,#tPlayers do
       if tPlayers[i] ~= nil then
@@ -434,7 +436,7 @@ tResolution["full"] = {959,539}
 tMessages = {}
 tHidden = {}
 
-function fMainLoop()
+function fRenderLoop()
   while true do
     fRenderTable()
     tUsers = oBridge.getUsers()
@@ -527,7 +529,7 @@ function fMainLoop()
         tSurface.clear()
       end
     end
-    os.startTimer(0.25)
+    os.startTimer(0.1)
     tEvent = {os.pullEvent()}
   end
 end
@@ -651,8 +653,15 @@ function fChatTimer()
   end
 end
 
+function fUpdatePlayers()
+  while true do
+    tPlayers = fGetPlayers()
+    sleep(0.5)
+  end
+end
+
 while true do
-  parallel.waitForAny(fMainLoop,fChatLoop,fChatTimer)
+  parallel.waitForAny(fRenderLoop,fChatLoop,fChatTimer,fUpdatePlayers)
   --sleep(0.05)
 end
 print(fDirection(0,10,0,0))
