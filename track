@@ -439,7 +439,7 @@ function fMainLoop()
     fRenderTable()
     tUsers = oBridge.getUsers()
     for i = 1,#tUsers do
-      if fAllowed(tUsers[i]) then
+      if fAllowed(tUsers[i]) and not tHidden[tUsers[i]) then
         tSurface = oBridge.getUserSurface(tUsers[i])
         tSurface.clear()
         -----------------------
