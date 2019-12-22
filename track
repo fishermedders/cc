@@ -432,6 +432,7 @@ tResolution["windowed"] = {959,507}
 tResolution["full"] = {959,539}
 
 tMessages = {}
+tHidden = {}
 
 function fMainLoop()
   while true do
@@ -621,6 +622,13 @@ function fChatLoop()
         else
           fAddChatMessage("You do not have permission!",0xFF0000,100,tEvent[3])
         end
+      end
+    end
+    if tCmdArgs[1] == "hide" then
+      if tHidden[tEvent[3]] == true then
+        tHidden[tEvent[3]] = nil
+      else
+        tHidden[tEvent[3]] = true
       end
     end
   end
