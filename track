@@ -529,7 +529,7 @@ function fRenderLoop()
         tSurface.clear()
       end
     end
-    os.startTimer(0.1)
+    os.startTimer(0.05)
     tEvent = {os.pullEvent()}
   end
 end
