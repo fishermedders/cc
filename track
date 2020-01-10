@@ -210,6 +210,11 @@ function decodeFromFile(path)
 	return decoded
 end
 
+
+------------------------------------------------------------
+--Start of program!
+
+
 --Finding a Peripheral
 function findPeripheral(pType)
   local pList = {}
@@ -261,9 +266,9 @@ function fRenderTable()
     tSensorData = oSensor.getPlayerData(tPlayers[i]["name"])
     tPlayers[i]["world"] = "?"
     if tSensorData then
-      tPlayers[i].x = math.floor(4073+tSensorData.position.x)
-      tPlayers[i].y = math.floor(39+tSensorData.position.y)
-      tPlayers[i].z = math.floor(3776+tSensorData.position.z)
+      tPlayers[i].x = math.floor(4048+tSensorData.position.x)
+      tPlayers[i].y = math.floor(68+tSensorData.position.y)
+      tPlayers[i].z = math.floor(3820+tSensorData.position.z)
       tPlayers[i].world = "world"
     end
     sRender = ""
@@ -484,6 +489,9 @@ function fRenderLoop()
         --* Tracker Section *--
         --*******************--
         -----------------------
+        for _,tRender in pairs(tRendered) do
+          nIterator = nIterator + 1
+        end
         nIterator = 1
         for _,tRender in pairs(tRendered) do
           nIterator = nIterator + 1
@@ -531,7 +539,6 @@ function fRenderLoop()
     end
     os.startTimer(0.05)
     tEvent = {os.pullEvent()}
-    print("updated")
   end
 end
 
