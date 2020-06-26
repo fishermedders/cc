@@ -31,7 +31,8 @@ function fGetItemsFromName(sName)
       --print(textutils.serialize(tCurrentItem))
       tCurrentItemObject = p.findItem(tCurrentItem)
       tMeta = tCurrentItemObject.getMetadata()
-      if string.match(sName, string.lower(tMeta.displayName)) then
+      print(tMeta.displ)
+      if string.match(string.lower(sName), string.lower(tMeta.displayName)) then
         print("MATCH")
         table.insert(tReturn, tMeta)
       end
