@@ -28,10 +28,11 @@ function fGetItemsFromName(sName)
   for i = 1,#tAvailable do
     if tAvailable[i].isCraftable then
       tCurrentItem = {["name"]=tAvailable[i].name,["damage"]=tAvailable[i].damage}
-      print(textutils.serialize(tCurrentItem))
+      --print(textutils.serialize(tCurrentItem))
       tCurrentItemObject = p.findItem(tCurrentItem)
       tMeta = tCurrentItemObject.getMetadata()
       if string.match(sName, string.lower(tMeta.displayName)) then
+        print("MATCH")
         table.insert(tReturn, tMeta)
       end
     end
